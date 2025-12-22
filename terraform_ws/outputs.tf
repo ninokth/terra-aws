@@ -1,0 +1,100 @@
+# Phase 0 outputs
+output "account_id" {
+  value       = data.aws_caller_identity.current.account_id
+  description = "AWS Account ID detected by Terraform"
+}
+
+output "arn" {
+  value       = data.aws_caller_identity.current.arn
+  description = "Caller ARN detected by Terraform (IAM user or assumed role)"
+}
+
+# Phase 1 outputs
+output "vpc_id" {
+  value       = aws_vpc.main.id
+  description = "ID of the VPC"
+}
+
+output "vpc_cidr" {
+  value       = aws_vpc.main.cidr_block
+  description = "CIDR block of the VPC"
+}
+
+output "public_subnet_id" {
+  value       = aws_subnet.public.id
+  description = "ID of the public subnet"
+}
+
+output "private_subnet_id" {
+  value       = aws_subnet.private.id
+  description = "ID of the private subnet"
+}
+
+output "internet_gateway_id" {
+  value       = aws_internet_gateway.main.id
+  description = "ID of the internet gateway"
+}
+
+output "public_route_table_id" {
+  value       = aws_route_table.public.id
+  description = "ID of the public route table"
+}
+
+output "private_route_table_id" {
+  value       = aws_route_table.private.id
+  description = "ID of the private route table"
+}
+
+# Phase 2 outputs
+output "bastion_sg_id" {
+  value       = aws_security_group.bastion.id
+  description = "ID of the bastion security group"
+}
+
+output "private_sg_id" {
+  value       = aws_security_group.private.id
+  description = "ID of the private security group"
+}
+
+# Phase 3 outputs
+output "key_pair_name" {
+  value       = aws_key_pair.main.key_name
+  description = "Name of the SSH key pair"
+}
+
+output "ami_id" {
+  value       = data.aws_ami.ubuntu.id
+  description = "ID of the Ubuntu AMI"
+}
+
+output "ami_name" {
+  value       = data.aws_ami.ubuntu.name
+  description = "Name of the Ubuntu AMI"
+}
+
+# Phase 4 outputs
+output "bastion_instance_id" {
+  value       = aws_instance.bastion.id
+  description = "ID of the bastion instance"
+}
+
+output "bastion_public_ip" {
+  value       = aws_eip.bastion.public_ip
+  description = "Elastic IP of the bastion host"
+}
+
+output "bastion_private_ip" {
+  value       = aws_instance.bastion.private_ip
+  description = "Private IP of the bastion host"
+}
+
+# Phase 5 outputs
+output "private_instance_id" {
+  value       = aws_instance.private.id
+  description = "ID of the private instance"
+}
+
+output "private_instance_private_ip" {
+  value       = aws_instance.private.private_ip
+  description = "Private IP of the private host"
+}

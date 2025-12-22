@@ -1,0 +1,32 @@
+=============================================
+Log: deploy
+Started: Mon Dec 22 13:30:49 UTC 2025
+=============================================
+
+
+>>> Checking Prerequisites
+[OK] Prerequisites validated
+
+>>> Deploying Infrastructure
+[INFO] Running: terraform apply -auto-approve
+[OK] Infrastructure deployed
+[INFO] Bastion Public IP:  51.20.243.72
+[INFO] Private Host IP:    10.22.6.190
+
+>>> Waiting for Bastion to be Ready
+[INFO] Waiting for SSH on 51.20.243.72...
+[OK] Bastion is ready
+
+>>> Waiting for Private Host to be Ready
+[INFO] Waiting for SSH on 10.22.6.190 (via bastion)...
+[OK] Private host is ready
+
+>>> Waiting for NAT to be Ready
+[INFO] Waiting for nftables NAT setup on bastion...
+[OK] NAT is ready
+[OK] Deployment Complete!
+
+=============================================
+Completed: Mon Dec 22 13:32:23 UTC 2025
+=============================================
+[INFO] Log saved to: /home/ninok/terraform_demo/logs/deploy_20251222_133049.log

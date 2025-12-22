@@ -1,0 +1,45 @@
+=============================================
+Log: first_time_setup
+Started: Mon Dec 22 13:19:15 UTC 2025
+=============================================
+
+
+>>> Checking Prerequisites
+  PASS  Terraform v1.14.3
+  PASS  AWS CLI v2.32.21
+  PASS  ssh-keygen available
+  PASS  curl available
+
+>>> Validating Configuration
+  PASS  Config file exists: config/user.conf
+[INFO] Configuration values:
+[INFO]   AWS_PROFILE:    terraform
+[INFO]   AWS_REGION:     eu-north-1
+[INFO]   NAME_PREFIX:    tf-demo
+[INFO]   SSH_KEY_PATH:   /home/ninok/.ssh/id_ed25519
+[INFO]   SSH_KEY_TYPE:   ed25519
+
+>>> Validating AWS Credentials
+[INFO] Verifying AWS credentials...
+[OK] AWS credentials valid
+[INFO]   Account: 101974468577
+[INFO]   Identity: arn:aws:iam::101974468577:user/terraform-admin
+
+>>> Detecting Public IP
+  PASS  Detected public IP: 128.199.58.89
+
+>>> Checking SSH Keys
+  PASS  SSH key exists: /home/ninok/.ssh/id_ed25519 (ED25519)
+
+>>> Creating Terraform Variables
+[INFO] Backed up existing terraform.tfvars
+  PASS  Created providers/terraform.tfvars
+
+>>> Initializing Terraform
+  PASS  Terraform initialized
+[OK] First Time Setup Complete!
+
+=============================================
+Completed: Mon Dec 22 13:19:24 UTC 2025
+=============================================
+[INFO] Log saved to: /home/ninok/terraform_demo/logs/first_time_setup_20251222_131915.log

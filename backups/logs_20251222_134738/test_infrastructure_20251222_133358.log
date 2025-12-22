@@ -1,0 +1,35 @@
+=============================================
+Log: test_infrastructure
+Started: Mon Dec 22 13:33:58 UTC 2025
+=============================================
+
+
+>>> Checking Deployment Status
+[INFO] Bastion Public IP:  51.20.243.72
+[INFO] Private Host IP:    10.22.6.190
+  PASS  Infrastructure deployed
+
+>>> Testing SSH Access to Bastion
+[INFO] Connecting to: 51.20.243.72
+[INFO]   Hostname: pubhost-01
+[INFO]   Kernel:   6.14.0-1018-aws
+  PASS  SSH to bastion
+
+>>> Testing SSH Access to Private Host
+[INFO] Connecting via: 51.20.243.72 -> 10.22.6.190
+[INFO]   Hostname: prvhost-01
+[INFO]   Kernel:   6.14.0-1018-aws
+  PASS  SSH to private host
+
+>>> Testing NAT Internet Connectivity
+[INFO] Testing internet access from private host...
+[INFO]   Exit IP: 51.20.243.72
+[INFO]   Expected: 51.20.243.72
+[INFO]   Traffic correctly exits through bastion EIP
+  PASS  NAT connectivity
+[OK] All tests passed!
+
+=============================================
+Completed: Mon Dec 22 13:34:11 UTC 2025
+=============================================
+[INFO] Log saved to: /home/ninok/terraform_demo/logs/test_infrastructure_20251222_133358.log

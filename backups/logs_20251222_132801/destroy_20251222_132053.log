@@ -1,0 +1,37 @@
+=============================================
+Log: destroy
+Started: Mon Dec 22 13:20:53 UTC 2025
+=============================================
+
+[INFO] Current Bastion IP: [33m╷[0m[0m
+[33m│[0m [0m[1m[33mWarning: [0m[0m[1mNo outputs found[0m
+[33m│[0m [0m
+[33m│[0m [0m[0mThe state file either has no outputs defined, or all the defined outputs
+[33m│[0m [0mare empty. Please define an output in your configuration with the `output`
+[33m│[0m [0mkeyword and run `terraform refresh` for it to become available. If you are
+[33m│[0m [0musing interpolation, please verify the interpolated value is not empty. You
+[33m│[0m [0mcan use the `terraform console` command to assist.
+[33m╵[0m[0m
+
+>>> Destroying Infrastructure
+[INFO] Running: terraform destroy -auto-approve
+[OK] Infrastructure destroyed
+
+>>> Verifying Complete Cleanup
+[INFO] Checking Terraform state...
+[INFO]   Terraform state is empty
+[INFO] Checking for remaining Elastic IPs...
+[INFO]   No remaining EIPs
+[INFO] Checking for remaining EC2 instances...
+[INFO]   No remaining EC2 instances
+[INFO] Checking for remaining VPCs...
+[INFO]   No remaining VPCs
+[INFO] Checking for remaining key pairs...
+[INFO]   No remaining key pairs
+[OK] All resources destroyed - Zero cost confirmed
+[OK] Destruction Complete!
+
+=============================================
+Completed: Mon Dec 22 13:21:24 UTC 2025
+=============================================
+[INFO] Log saved to: /home/ninok/terraform_demo/logs/destroy_20251222_132053.log
