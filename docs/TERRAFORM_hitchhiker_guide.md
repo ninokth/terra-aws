@@ -4,6 +4,8 @@
 
 This guide explains how Terraform actually thinks - not how marketing describes it. Once you understand these concepts, Terraform becomes predictable, even boring. And boring infrastructure is the highest compliment.
 
+**Terraform is best understood as a graph evolution engine.** This guide explains how to think in graphs when designing Terraform systems.
+
 ## About This Guide
 
 **Why this exists:** Most Terraform tutorials teach you *how* to write code. This guide explains *why* Terraform works the way it does - the mental model, the underlying principles, the "metaphysics" of infrastructure as code. Once you understand the model, the syntax becomes obvious and the behavior becomes predictable.
