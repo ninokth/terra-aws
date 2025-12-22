@@ -32,12 +32,40 @@ Internet
             +---------------------------------------+
 ```
 
+> **Note:** This is a **single-AZ deployment** (eu-north-1a by default) designed for learning and development. For production workloads requiring high availability, deploy across multiple AZs.
+
+### Why Bastion-as-NAT (not NAT Gateway)?
+
+This project uses the bastion host as a NAT instance via nftables masquerade. This is a deliberate design choice for educational purposes:
+
+| Aspect | Bastion-as-NAT (this project) | AWS NAT Gateway |
+|--------|-------------------------------|-----------------|
+| **Cost** | ~$8/month (t3.micro) | ~$32/month + data processing |
+| **Throughput** | Limited by instance type | Up to 100 Gbps |
+| **Availability** | Single point of failure | Managed, per-AZ redundancy |
+| **Maintenance** | You manage OS, nftables | Fully managed |
+| **Learning value** | High - understand NAT internals | Low - "it just works" |
+
+For production workloads with high availability requirements, consider AWS NAT Gateway or NAT Gateway per AZ.
+
+### Estimated Costs
+
+Running this infrastructure costs approximately **$15-20/month** in eu-north-1:
+
+| Resource | Estimated Cost |
+|----------|---------------|
+| 2× t3.micro instances | ~$15/month |
+| 1× Elastic IP (attached) | $0 (free when attached) |
+| Data transfer | Variable (~$0.09/GB out) |
+
+**Tip:** Run `./scripts/destroy.sh` when not in use to avoid charges.
+
 ## Key Features
 
 - **Zero Trust Access**: Bastion SSH restricted to single admin IP (your configured IP/32)
 - **Private Isolation**: Private instances have no direct internet access or public IPs
 - **NAT Functionality**: Bastion provides internet access for private instances using nftables
-- **Modern Cryptography**: Ed25519 SSH keys (quantum-resistant)
+- **Modern Cryptography**: Ed25519 SSH keys (compact, fast, widely recommended)
 - **Infrastructure as Code**: Complete Terraform deployment with modular structure
 - **Third-Party Ready**: Clone and deploy with minimal configuration
 - **Security Best Practices**: No credentials in code, strict security groups, minimal attack surface
@@ -87,7 +115,7 @@ Complete setup and usage documentation. Each guide is self-contained with explan
 
 | Document | What You'll Learn |
 |----------|-------------------|
-| [Hitchhiker's Guide](TERRAFORM_hitchhiker_guide.md) | Conceptual overview of Terraform, IaC principles, project structure, and how all pieces fit together |
+| [Hitchhiker's Guide](docs/TERRAFORM_hitchhiker_guide.md) | Conceptual overview of Terraform, IaC principles, project structure, and how all pieces fit together |
 
 ### Setup Guides
 
@@ -206,7 +234,6 @@ See [Scripts Documentation](scripts/README.md) for detailed script descriptions 
 
 ```
 terraform_demo/
-├── TERRAFORM_hitchhiker_guide.md  # Start here - conceptual overview
 ├── README.md                      # This file - quick start & reference
 ├── LICENSE                        # MIT License
 ├── CONTRIBUTING.md                # Contribution guidelines
@@ -226,6 +253,7 @@ terraform_demo/
 │
 ├── docs/                          # Documentation
 │   ├── README.md                 # Documentation index
+│   ├── TERRAFORM_hitchhiker_guide.md # Start here - conceptual overview
 │   ├── terraform-installation.md # Terraform setup guide
 │   ├── aws-account-setup.md      # AWS IAM & credentials setup
 │   ├── building-infrastructure.md    # Deployment guide
@@ -454,7 +482,7 @@ terraform -chdir=providers destroy -target=module.terraform_ws.aws_instance.priv
 - No public-facing services on private instances
 
 ### SSH Security
-- Ed25519 keys (modern, quantum-resistant algorithm)
+- Ed25519 keys (modern, compact, widely recommended)
 - Bastion access restricted to single admin IP
 - Private instances accessible only from bastion
 - No password authentication (key-based only)
