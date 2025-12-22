@@ -14,6 +14,69 @@ This guide explains how Terraform actually thinks - not how marketing describes 
 
 ---
 
+## This Project's Structure
+
+Before diving into Terraform theory, here's how this specific project is organized:
+
+### The Execution Contract
+
+**Terraform is always executed from `providers/`. The `terraform_ws/` directory is a child module and is never run directly.**
+
+```text
+terraform_demo/
+├── providers/              ← ROOT MODULE (run terraform here)
+│   ├── main.tf            ← calls module "../terraform_ws"
+│   ├── variables.tf       ← input variable declarations
+│   ├── outputs.tf         ← exports values from the module
+│   ├── terraform.tfvars   ← actual variable values (gitignored)
+│   └── terraform.tfstate  ← STATE LIVES HERE (gitignored)
+│
+└── terraform_ws/           ← CHILD MODULE (never run directly)
+    ├── main.tf            ← resource definitions
+    ├── variables.tf       ← module inputs
+    └── outputs.tf         ← module outputs
+```
+
+Why this structure?
+
+- **`providers/`** is the execution boundary. All `terraform` commands run here.
+- **`terraform_ws/`** contains reusable infrastructure definitions, called as a module.
+- State is owned by `providers/`, not by `terraform_ws/`.
+
+### State Ownership
+
+A critical concept: **the root module owns the state file**.
+
+```text
+providers/terraform.tfstate  ← This file "owns" all resources
+     │
+     └── Contains mappings for:
+         ├── module.terraform_ws.aws_vpc.main
+         ├── module.terraform_ws.aws_subnet.public
+         ├── module.terraform_ws.aws_instance.bastion
+         └── ... every resource, even those defined in child modules
+```
+
+Child modules (`terraform_ws/`) don't have their own state. When you call a module, its resources become part of the calling module's state, prefixed with the module path.
+
+This is why:
+- You run `terraform apply` in `providers/`, not in `terraform_ws/`
+- State is stored in `providers/terraform.tfstate`
+- Resource addresses look like `module.terraform_ws.aws_vpc.main`
+
+### The Wrapper Scripts
+
+This project includes shell scripts that handle all the execution details:
+
+```bash
+./scripts/deploy.sh      # Runs: terraform -chdir=providers apply
+./scripts/destroy.sh     # Runs: terraform -chdir=providers destroy
+```
+
+You never need to `cd` into directories or remember paths. The scripts do it.
+
+---
+
 ## Part 1: The Three Worlds of Terraform
 
 Think of Terraform as a very pedantic accountant with a memory, a rulebook, and zero tolerance for hand-waving.
