@@ -176,6 +176,8 @@ export AWS_REGION="eu-north-1"
 
 ## Quick Start
 
+> **Note:** All scripts handle Terraform paths and variable files automatically—you never need to run `terraform` commands directly.
+
 ```bash
 # 1. Clone repository
 git clone <repository-url>
