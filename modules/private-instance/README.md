@@ -34,7 +34,7 @@ Creates the private instance and NAT route through bastion.
 module "private_instance" {
   source = "../modules/private-instance"
 
-  name_prefix       = "my-project"
+  name_prefix       = "VMs_2x_public_private"
   subnet_id         = module.vpc.private_subnet_id
   security_group_id = module.security_groups.private_sg_id
   key_name          = module.ssh_key.key_pair_name
@@ -49,7 +49,3 @@ module "private_instance" {
 ## NAT Route
 
 Routes all internet traffic (0.0.0.0/0) through the bastion instance.
-
-## Status
-
-**Pending extraction** - See [TRRAWS-001-P1.5-private-instance-module](../Notes/tickets/TRRAWS-001-P0.0-refactoring-plan/TRRAWS-001-P1/TRRAWS-001-P1.5-private-instance-module/)

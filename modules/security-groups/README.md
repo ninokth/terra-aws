@@ -29,7 +29,7 @@ Creates security groups for bastion and private instances.
 module "security_groups" {
   source = "../modules/security-groups"
 
-  name_prefix = "my-project"
+  name_prefix = "VMs_2x_public_private"
   vpc_id      = module.vpc.vpc_id
   admin_ip    = "203.0.113.0/32"
   tags        = { Environment = "dev" }
@@ -47,7 +47,3 @@ module "security_groups" {
 
 - Ingress: SSH (22) from bastion SG only
 - Egress: All traffic (for NAT)
-
-## Status
-
-**Pending extraction** - See [TRRAWS-001-P1.2-security-groups-module](../Notes/tickets/TRRAWS-001-P0.0-refactoring-plan/TRRAWS-001-P1/TRRAWS-001-P1.2-security-groups-module/)

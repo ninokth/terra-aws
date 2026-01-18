@@ -35,7 +35,7 @@ Creates the bastion host with NAT functionality using nftables.
 module "bastion" {
   source = "../modules/bastion"
 
-  name_prefix         = "my-project"
+  name_prefix         = "VMs_2x_public_private"
   subnet_id           = module.vpc.public_subnet_id
   security_group_id   = module.security_groups.bastion_sg_id
   key_name            = module.ssh_key.key_pair_name
@@ -52,7 +52,3 @@ The bastion acts as a NAT gateway using nftables:
 - `source_dest_check = false` - Allows traffic forwarding
 - `net.ipv4.ip_forward = 1` - Enables kernel forwarding
 - nftables masquerade rule for outbound NAT
-
-## Status
-
-**Pending extraction** - See [TRRAWS-001-P1.4-bastion-module](../Notes/tickets/TRRAWS-001-P0.0-refactoring-plan/TRRAWS-001-P1/TRRAWS-001-P1.4-bastion-module/)

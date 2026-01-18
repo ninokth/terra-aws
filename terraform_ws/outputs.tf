@@ -9,39 +9,39 @@ output "arn" {
   description = "Caller ARN detected by Terraform (IAM user or assumed role)"
 }
 
-# Phase 1 outputs
+# Phase 1 outputs (from VPC module)
 output "vpc_id" {
-  value       = aws_vpc.main.id
+  value       = module.vpc.vpc_id
   description = "ID of the VPC"
 }
 
 output "vpc_cidr" {
-  value       = aws_vpc.main.cidr_block
+  value       = module.vpc.vpc_cidr_block
   description = "CIDR block of the VPC"
 }
 
 output "public_subnet_id" {
-  value       = aws_subnet.public.id
+  value       = module.vpc.public_subnet_id
   description = "ID of the public subnet"
 }
 
 output "private_subnet_id" {
-  value       = aws_subnet.private.id
+  value       = module.vpc.private_subnet_id
   description = "ID of the private subnet"
 }
 
 output "internet_gateway_id" {
-  value       = aws_internet_gateway.main.id
+  value       = module.vpc.internet_gateway_id
   description = "ID of the internet gateway"
 }
 
 output "public_route_table_id" {
-  value       = aws_route_table.public.id
+  value       = module.vpc.public_route_table_id
   description = "ID of the public route table"
 }
 
 output "private_route_table_id" {
-  value       = aws_route_table.private.id
+  value       = module.vpc.private_route_table_id
   description = "ID of the private route table"
 }
 

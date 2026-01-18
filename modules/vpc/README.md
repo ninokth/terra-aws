@@ -40,7 +40,7 @@ Creates a VPC with public and private subnets for the bastion-NAT infrastructure
 module "vpc" {
   source = "../modules/vpc"
 
-  name_prefix         = "my-project"
+  name_prefix         = "VMs_2x_public_private"
   vpc_cidr            = "10.22.0.0/16"
   public_subnet_cidr  = "10.22.5.0/24"
   private_subnet_cidr = "10.22.6.0/24"
@@ -48,7 +48,3 @@ module "vpc" {
   tags                = { Environment = "dev" }
 }
 ```
-
-## Status
-
-**Pending extraction** - See [TRRAWS-001-P1.1-vpc-module](../Notes/tickets/TRRAWS-001-P0.0-refactoring-plan/TRRAWS-001-P1/TRRAWS-001-P1.1-vpc-module/)

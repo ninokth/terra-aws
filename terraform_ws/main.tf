@@ -2,85 +2,15 @@
 data "aws_caller_identity" "current" {}
 
 # Phase 1: VPC and Network Foundation
+module "vpc" {
+  source = "../modules/vpc"
 
-# VPC
-resource "aws_vpc" "main" {
-  cidr_block           = var.vpc_cidr
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-
-  tags = {
-    Name = "${var.name_prefix}-vpc"
-  }
-}
-
-# Internet Gateway for public subnet
-resource "aws_internet_gateway" "main" {
-  vpc_id = aws_vpc.main.id
-
-  tags = {
-    Name = "${var.name_prefix}-igw"
-  }
-}
-
-# Public Subnet (10.22.5.0/24)
-resource "aws_subnet" "public" {
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = var.public_subnet_cidr
-  availability_zone       = var.availability_zone
-  map_public_ip_on_launch = true
-
-  tags = {
-    Name = "${var.name_prefix}-public-subnet"
-    Type = "public"
-  }
-}
-
-# Private Subnet (10.22.6.0/24)
-resource "aws_subnet" "private" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = var.private_subnet_cidr
-  availability_zone = var.availability_zone
-
-  tags = {
-    Name = "${var.name_prefix}-private-subnet"
-    Type = "private"
-  }
-}
-
-# Route Table for Public Subnet
-resource "aws_route_table" "public" {
-  vpc_id = aws_vpc.main.id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.main.id
-  }
-
-  tags = {
-    Name = "${var.name_prefix}-public-rt"
-  }
-}
-
-# Route Table for Private Subnet (no internet route yet - will be added in Phase 5)
-resource "aws_route_table" "private" {
-  vpc_id = aws_vpc.main.id
-
-  tags = {
-    Name = "${var.name_prefix}-private-rt"
-  }
-}
-
-# Associate Public Subnet with Public Route Table
-resource "aws_route_table_association" "public" {
-  subnet_id      = aws_subnet.public.id
-  route_table_id = aws_route_table.public.id
-}
-
-# Associate Private Subnet with Private Route Table
-resource "aws_route_table_association" "private" {
-  subnet_id      = aws_subnet.private.id
-  route_table_id = aws_route_table.private.id
+  name_prefix         = var.name_prefix
+  vpc_cidr            = var.vpc_cidr
+  public_subnet_cidr  = var.public_subnet_cidr
+  private_subnet_cidr = var.private_subnet_cidr
+  availability_zone   = var.availability_zone
+  tags                = local.common_tags
 }
 
 # Phase 2: Security Groups
@@ -89,7 +19,7 @@ resource "aws_route_table_association" "private" {
 resource "aws_security_group" "bastion" {
   name        = "${var.name_prefix}-bastion-sg"
   description = "Security group for bastion host (pub_host-01) - SSH access from admin IP only"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = module.vpc.vpc_id
 
   # Ingress: SSH from admin IP only
   ingress {
@@ -128,7 +58,7 @@ resource "aws_security_group" "bastion" {
 resource "aws_security_group" "private" {
   name        = "${var.name_prefix}-private-sg"
   description = "Security group for private host (prv_host-01) - SSH access from bastion only"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = module.vpc.vpc_id
 
   # Ingress: SSH from bastion security group only
   ingress {
@@ -195,7 +125,7 @@ resource "aws_instance" "bastion" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.bastion_instance_type
   key_name               = aws_key_pair.main.key_name
-  subnet_id              = aws_subnet.public.id
+  subnet_id              = module.vpc.public_subnet_id
   vpc_security_group_ids = [aws_security_group.bastion.id]
 
   # Disable source/destination check for NAT functionality
@@ -288,7 +218,7 @@ resource "aws_eip" "bastion" {
     Host = "pub_host-01"
   }
 
-  depends_on = [aws_internet_gateway.main]
+  depends_on = [module.vpc]
 }
 
 # Phase 5: Private Instance (prv_host-01) + NAT Routing
@@ -298,7 +228,7 @@ resource "aws_instance" "private" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.private_instance_type
   key_name               = aws_key_pair.main.key_name
-  subnet_id              = aws_subnet.private.id
+  subnet_id              = module.vpc.private_subnet_id
   vpc_security_group_ids = [aws_security_group.private.id]
 
   # User data: Set hostname
@@ -327,7 +257,7 @@ resource "aws_instance" "private" {
 
 # Add route to private route table for internet access via bastion NAT
 resource "aws_route" "private_to_nat" {
-  route_table_id         = aws_route_table.private.id
+  route_table_id         = module.vpc.private_route_table_id
   destination_cidr_block = "0.0.0.0/0"
   network_interface_id   = aws_instance.bastion.primary_network_interface_id
 
