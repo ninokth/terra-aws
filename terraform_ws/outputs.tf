@@ -45,14 +45,14 @@ output "private_route_table_id" {
   description = "ID of the private route table"
 }
 
-# Phase 2 outputs
+# Phase 2 outputs (from Security Groups module)
 output "bastion_sg_id" {
-  value       = aws_security_group.bastion.id
+  value       = module.security_groups.bastion_sg_id
   description = "ID of the bastion security group"
 }
 
 output "private_sg_id" {
-  value       = aws_security_group.private.id
+  value       = module.security_groups.private_sg_id
   description = "ID of the private security group"
 }
 
