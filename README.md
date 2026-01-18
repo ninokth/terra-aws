@@ -486,7 +486,7 @@ terraform -chdir=providers destroy -target=module.terraform_ws.aws_instance.priv
 ### SSH Security
 - Ed25519 keys (modern, compact, widely recommended)
 - Bastion access restricted to single admin IP
-- Private instances accessible only from bastion
+- Private instance SSH ingress references bastion security group (SG-to-SG), not subnet CIDR
 - No password authentication (key-based only)
 
 ### NAT Security

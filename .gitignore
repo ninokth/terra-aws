@@ -12,6 +12,9 @@ crash.*.log
 # Exclude Notes directory from git
 Notes/
 
+# Critical rules documentation (project-specific, not for repo)
+.critical_rules/
+
 # User-specific configuration (use user.conf.example as template)
 config/user.conf
 
