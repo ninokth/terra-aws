@@ -63,28 +63,28 @@ output "key_pair_name" {
 }
 
 output "ami_id" {
-  value       = data.aws_ami.ubuntu.id
+  value       = module.bastion.ami_id
   description = "ID of the Ubuntu AMI"
 }
 
 output "ami_name" {
-  value       = data.aws_ami.ubuntu.name
+  value       = module.bastion.ami_name
   description = "Name of the Ubuntu AMI"
 }
 
-# Phase 4 outputs
+# Phase 4 outputs (from Bastion module)
 output "bastion_instance_id" {
-  value       = aws_instance.bastion.id
+  value       = module.bastion.instance_id
   description = "ID of the bastion instance"
 }
 
 output "bastion_public_ip" {
-  value       = aws_eip.bastion.public_ip
+  value       = module.bastion.public_ip
   description = "Elastic IP of the bastion host"
 }
 
 output "bastion_private_ip" {
-  value       = aws_instance.bastion.private_ip
+  value       = module.bastion.private_ip
   description = "Private IP of the bastion host"
 }
 
