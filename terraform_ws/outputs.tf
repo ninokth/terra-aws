@@ -88,13 +88,13 @@ output "bastion_private_ip" {
   description = "Private IP of the bastion host"
 }
 
-# Phase 5 outputs
+# Phase 5 outputs (from Private Instance module)
 output "private_instance_id" {
-  value       = aws_instance.private.id
+  value       = module.private_instance.instance_id
   description = "ID of the private instance"
 }
 
 output "private_instance_private_ip" {
-  value       = aws_instance.private.private_ip
+  value       = module.private_instance.private_ip
   description = "Private IP of the private host"
 }
