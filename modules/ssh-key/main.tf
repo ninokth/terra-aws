@@ -1,6 +1,9 @@
-# SSH Key Module - Main Configuration
-#
-# Resources to be extracted from terraform_ws/main.tf:
-# - aws_key_pair.deployer
-#
-# TODO: Extract resources in TRRAWS-001-P1.3-ssh-key-module
+# SSH Key Pair for EC2 instance access
+resource "aws_key_pair" "main" {
+  key_name   = "${var.name_prefix}-key"
+  public_key = file(pathexpand(var.ssh_public_key_path))
+
+  tags = merge(var.tags, {
+    Name = "${var.name_prefix}-ssh-key"
+  })
+}

@@ -27,14 +27,12 @@ module "security_groups" {
 
 # Phase 3: SSH Key Pair and AMI
 
-# SSH Key Pair for instance access
-resource "aws_key_pair" "main" {
-  key_name   = "${var.name_prefix}-key"
-  public_key = file(pathexpand(var.ssh_public_key_path))
+module "ssh_key" {
+  source = "../modules/ssh-key"
 
-  tags = {
-    Name = "${var.name_prefix}-ssh-key"
-  }
+  name_prefix         = var.name_prefix
+  ssh_public_key_path = var.ssh_public_key_path
+  tags                = local.common_tags
 }
 
 # Data source: Find latest Ubuntu 24.04 LTS AMI
@@ -65,7 +63,7 @@ data "aws_ami" "ubuntu" {
 resource "aws_instance" "bastion" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.bastion_instance_type
-  key_name               = aws_key_pair.main.key_name
+  key_name               = module.ssh_key.key_pair_name
   subnet_id              = module.vpc.public_subnet_id
   vpc_security_group_ids = [module.security_groups.bastion_sg_id]
 
@@ -168,7 +166,7 @@ resource "aws_eip" "bastion" {
 resource "aws_instance" "private" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.private_instance_type
-  key_name               = aws_key_pair.main.key_name
+  key_name               = module.ssh_key.key_pair_name
   subnet_id              = module.vpc.private_subnet_id
   vpc_security_group_ids = [module.security_groups.private_sg_id]
 

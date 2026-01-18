@@ -56,9 +56,9 @@ output "private_sg_id" {
   description = "ID of the private security group"
 }
 
-# Phase 3 outputs
+# Phase 3 outputs (from SSH Key module)
 output "key_pair_name" {
-  value       = aws_key_pair.main.key_name
+  value       = module.ssh_key.key_pair_name
   description = "Name of the SSH key pair"
 }
 
