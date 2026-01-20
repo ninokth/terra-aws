@@ -137,12 +137,12 @@ scripts/
 
 Detailed breakdown in the [Main README](../README.md#infrastructure-components):
 
-- Phase 0: Identity Validation
-- Phase 1: Network Foundation (VPC, subnets, IGW, route tables)
-- Phase 2: Security Groups
-- Phase 3: Compute Prerequisites (SSH keys, AMI)
-- Phase 4: Bastion Instance with NAT
-- Phase 5: Private Instance with NAT routing
+1. Identity Validation
+2. Network Foundation (VPC, subnets, IGW, route tables)
+3. Security Groups
+4. Compute Prerequisites (SSH keys, AMI)
+5. Bastion Instance with NAT
+6. Private Instance with NAT routing
 
 ### Security
 

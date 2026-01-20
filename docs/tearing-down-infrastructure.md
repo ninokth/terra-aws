@@ -92,23 +92,23 @@ terraform state list
 **Expected output**:
 
 ```
-module.terraform_ws.data.aws_ami.ubuntu
 module.terraform_ws.data.aws_caller_identity.current
-module.terraform_ws.aws_eip.bastion
-module.terraform_ws.aws_instance.bastion
-module.terraform_ws.aws_instance.private
-module.terraform_ws.aws_internet_gateway.main
-module.terraform_ws.aws_key_pair.main
-module.terraform_ws.aws_route.private_to_nat
-module.terraform_ws.aws_route_table.private
-module.terraform_ws.aws_route_table.public
-module.terraform_ws.aws_route_table_association.private
-module.terraform_ws.aws_route_table_association.public
-module.terraform_ws.aws_security_group.bastion
-module.terraform_ws.aws_security_group.private
-module.terraform_ws.aws_subnet.private
-module.terraform_ws.aws_subnet.public
-module.terraform_ws.aws_vpc.main
+module.terraform_ws.module.bastion.data.aws_ami.ubuntu
+module.terraform_ws.module.bastion.aws_eip.bastion
+module.terraform_ws.module.bastion.aws_instance.bastion
+module.terraform_ws.module.private_instance.aws_instance.private
+module.terraform_ws.module.private_instance.aws_route.private_to_nat
+module.terraform_ws.module.security_groups.aws_security_group.bastion
+module.terraform_ws.module.security_groups.aws_security_group.private
+module.terraform_ws.module.ssh_key.aws_key_pair.main
+module.terraform_ws.module.vpc.aws_internet_gateway.main
+module.terraform_ws.module.vpc.aws_route_table.private
+module.terraform_ws.module.vpc.aws_route_table.public
+module.terraform_ws.module.vpc.aws_route_table_association.private
+module.terraform_ws.module.vpc.aws_route_table_association.public
+module.terraform_ws.module.vpc.aws_subnet.private
+module.terraform_ws.module.vpc.aws_subnet.public
+module.terraform_ws.module.vpc.aws_vpc.main
 ```
 
 **View current outputs**:
@@ -181,7 +181,7 @@ terraform plan -destroy
 ```
 Terraform will perform the following actions:
 
-  # module.terraform_ws.aws_eip.bastion will be destroyed
+  # module.terraform_ws.module.bastion.aws_eip.bastion will be destroyed
   - resource "aws_eip" "bastion" {
       - allocation_id        = "eipalloc-0abc123..." -> null
       - domain               = "vpc" -> null
@@ -190,7 +190,7 @@ Terraform will perform the following actions:
       ...
     }
 
-  # module.terraform_ws.aws_instance.bastion will be destroyed
+  # module.terraform_ws.module.bastion.aws_instance.bastion will be destroyed
   - resource "aws_instance" "bastion" {
       - ami                          = "ami-073130f74f5ffb161" -> null
       - instance_type                = "t3.micro" -> null
@@ -247,23 +247,23 @@ Terraform will destroy resources in reverse dependency order.
 **Expected output** (takes 2-3 minutes):
 
 ```
-module.terraform_ws.aws_route.private_to_nat: Destroying...
-module.terraform_ws.aws_route_table_association.private: Destroying...
-module.terraform_ws.aws_route_table_association.public: Destroying...
-module.terraform_ws.aws_eip.bastion: Destroying...
+module.terraform_ws.module.private_instance.aws_route.private_to_nat: Destroying...
+module.terraform_ws.module.vpc.aws_route_table_association.private: Destroying...
+module.terraform_ws.module.vpc.aws_route_table_association.public: Destroying...
+module.terraform_ws.module.bastion.aws_eip.bastion: Destroying...
 ...
-module.terraform_ws.aws_instance.bastion: Destroying... [id=i-0f1391b0c8be9a657]
-module.terraform_ws.aws_instance.private: Destroying... [id=i-01aebeb4455aa355c]
-module.terraform_ws.aws_instance.bastion: Still destroying... [10s elapsed]
-module.terraform_ws.aws_instance.bastion: Destruction complete after 35s
-module.terraform_ws.aws_eip.bastion: Destruction complete after 2s
+module.terraform_ws.module.bastion.aws_instance.bastion: Destroying... [id=i-0f1391b0c8be9a657]
+module.terraform_ws.module.private_instance.aws_instance.private: Destroying... [id=i-01aebeb4455aa355c]
+module.terraform_ws.module.bastion.aws_instance.bastion: Still destroying... [10s elapsed]
+module.terraform_ws.module.bastion.aws_instance.bastion: Destruction complete after 35s
+module.terraform_ws.module.bastion.aws_eip.bastion: Destruction complete after 2s
 ...
-module.terraform_ws.aws_subnet.public: Destroying...
-module.terraform_ws.aws_subnet.private: Destroying...
-module.terraform_ws.aws_subnet.public: Destruction complete after 1s
-module.terraform_ws.aws_subnet.private: Destruction complete after 1s
-module.terraform_ws.aws_vpc.main: Destroying...
-module.terraform_ws.aws_vpc.main: Destruction complete after 1s
+module.terraform_ws.module.vpc.aws_subnet.public: Destroying...
+module.terraform_ws.module.vpc.aws_subnet.private: Destroying...
+module.terraform_ws.module.vpc.aws_subnet.public: Destruction complete after 1s
+module.terraform_ws.module.vpc.aws_subnet.private: Destruction complete after 1s
+module.terraform_ws.module.vpc.aws_vpc.main: Destroying...
+module.terraform_ws.module.vpc.aws_vpc.main: Destruction complete after 1s
 
 Destroy complete! Resources: 17 destroyed.
 ```
@@ -426,8 +426,8 @@ If destruction fails due to dependencies:
 terraform destroy -auto-approve
 
 # Or target specific resources
-terraform destroy -target=module.terraform_ws.aws_instance.bastion
-terraform destroy -target=module.terraform_ws.aws_instance.private
+terraform destroy -target=module.terraform_ws.module.bastion.aws_instance.bastion
+terraform destroy -target=module.terraform_ws.module.private_instance.aws_instance.private
 ```
 
 ### Resources Still Exist After Destroy
@@ -477,7 +477,7 @@ If state is corrupted or out of sync:
 
 ```bash
 # Remove from state (DANGEROUS - only if resource is manually deleted)
-terraform state rm module.terraform_ws.aws_instance.bastion
+terraform state rm module.terraform_ws.module.bastion.aws_instance.bastion
 
 # Or refresh state
 terraform refresh
@@ -492,14 +492,14 @@ If you only want to destroy specific resources:
 
 ```bash
 # Destroy only the private instance
-terraform destroy -target=module.terraform_ws.aws_instance.private
+terraform destroy -target=module.terraform_ws.module.private_instance.aws_instance.private
 
 # Destroy only the bastion instance
-terraform destroy -target=module.terraform_ws.aws_instance.bastion
+terraform destroy -target=module.terraform_ws.module.bastion.aws_instance.bastion
 
 # Destroy only security groups
-terraform destroy -target=module.terraform_ws.aws_security_group.bastion
-terraform destroy -target=module.terraform_ws.aws_security_group.private
+terraform destroy -target=module.terraform_ws.module.security_groups.aws_security_group.bastion
+terraform destroy -target=module.terraform_ws.module.security_groups.aws_security_group.private
 ```
 
 **⚠️ Warning**: Partial destruction can leave infrastructure in an inconsistent state. Only use this if you know what you're doing.

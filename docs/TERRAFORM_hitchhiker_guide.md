@@ -22,28 +22,85 @@ Before diving into Terraform theory, here's how this specific project is organiz
 
 ### The Execution Contract
 
-**Terraform is always executed from `providers/`. The `terraform_ws/` directory is a child module and is never run directly.**
+**Terraform is always executed from `providers/`. Child modules are never run directly.**
 
 ```text
 terraform_demo/
-├── providers/              ← ROOT MODULE (run terraform here)
-│   ├── main.tf            ← calls module "../terraform_ws"
-│   ├── variables.tf       ← input variable declarations
-│   ├── outputs.tf         ← exports values from the module
-│   ├── terraform.tfvars   ← actual variable values (gitignored)
-│   └── terraform.tfstate  ← STATE LIVES HERE (gitignored)
+├── providers/                  ← ROOT MODULE (run terraform here)
+│   ├── main.tf                ← AWS provider + calls terraform_ws module
+│   ├── variables.tf           ← 3 root variables: region, name_prefix, admin_ip_cidr
+│   ├── outputs.tf             ← Passthrough outputs from terraform_ws
+│   ├── versions.tf            ← Terraform/provider version constraints
+│   ├── terraform.tfvars       ← Variable values (gitignored)
+│   └── terraform.tfstate      ← STATE LIVES HERE (gitignored)
 │
-└── terraform_ws/           ← CHILD MODULE (never run directly)
-    ├── main.tf            ← resource definitions
-    ├── variables.tf       ← module inputs
-    └── outputs.tf         ← module outputs
+├── terraform_ws/               ← ORCHESTRATION MODULE
+│   ├── main.tf                ← Calls all 5 infrastructure modules (phases 0-5)
+│   ├── variables.tf           ← All variables with sensible defaults
+│   ├── outputs.tf             ← Aggregates outputs from all child modules
+│   └── locals.tf              ← Common tags applied to all resources
+│
+└── modules/                    ← REUSABLE INFRASTRUCTURE MODULES
+    ├── vpc/                   ← VPC, subnets, route tables, IGW
+    │   ├── main.tf
+    │   ├── variables.tf
+    │   └── outputs.tf
+    ├── security-groups/       ← Bastion and private security groups
+    │   ├── main.tf
+    │   ├── variables.tf
+    │   └── outputs.tf
+    ├── ssh-key/               ← AWS key pair from local SSH public key
+    │   ├── main.tf
+    │   ├── variables.tf
+    │   └── outputs.tf
+    ├── bastion/               ← Bastion EC2 + Elastic IP + nftables NAT
+    │   ├── main.tf
+    │   ├── variables.tf
+    │   └── outputs.tf
+    └── private-instance/      ← Private EC2 + NAT route
+        ├── main.tf
+        ├── variables.tf
+        └── outputs.tf
+```
+
+### Module Hierarchy
+
+```text
+providers/main.tf
+    └── terraform_ws/main.tf
+            ├── modules/vpc
+            ├── modules/security-groups
+            ├── modules/ssh-key
+            ├── modules/bastion
+            └── modules/private-instance
 ```
 
 Why this structure?
 
 - **`providers/`** is the execution boundary. All `terraform` commands run here.
-- **`terraform_ws/`** contains reusable infrastructure definitions, called as a module.
-- State is owned by `providers/`, not by `terraform_ws/`.
+- **`terraform_ws/`** is the orchestration layer - wires modules together, holds defaults.
+- **`modules/`** contains single-purpose modules (one concern per module).
+- State is owned by `providers/`, not by child modules.
+
+### Variable Flow
+
+All configuration variables pass through the root module:
+
+```text
+terraform.tfvars          providers/           terraform_ws/         modules/
+(User Input)              variables.tf         variables.tf          (5 modules)
+┌─────────────────┐      ┌─────────────────┐  ┌─────────────────┐  ┌─────────────┐
+│ region          │─────▶│ region          │─▶│ region          │  │             │
+│ name_prefix     │─────▶│ name_prefix     │─▶│ name_prefix     │─▶│ distributed │
+│ admin_ip_cidr   │─────▶│ admin_ip_cidr   │─▶│ admin_ip_cidr   │─▶│ to modules  │
+│ vpc_cidr        │─────▶│ vpc_cidr        │─▶│ vpc_cidr        │  │ as needed   │
+│ subnet CIDRs    │─────▶│ subnet CIDRs    │─▶│ subnet CIDRs    │  │             │
+│ instance types  │─────▶│ instance types  │─▶│ instance types  │  │             │
+│ ...             │      │ ...             │  │ ...             │  │             │
+└─────────────────┘      └─────────────────┘  └─────────────────┘  └─────────────┘
+```
+
+Variables have sensible defaults in both `providers/variables.tf` and `terraform_ws/variables.tf`. Only `admin_ip_cidr` is required (no default for security reasons).
 
 ### State Ownership
 
@@ -53,18 +110,19 @@ A critical concept: **the root module owns the state file**.
 providers/terraform.tfstate  ← This file "owns" all resources
      │
      └── Contains mappings for:
-         ├── module.terraform_ws.aws_vpc.main
-         ├── module.terraform_ws.aws_subnet.public
-         ├── module.terraform_ws.aws_instance.bastion
-         └── ... every resource, even those defined in child modules
+         ├── module.terraform_ws.module.vpc.aws_vpc.main
+         ├── module.terraform_ws.module.vpc.aws_subnet.public
+         ├── module.terraform_ws.module.bastion.aws_instance.bastion
+         ├── module.terraform_ws.module.private_instance.aws_instance.private
+         └── ... every resource from all child modules
 ```
 
-Child modules (`terraform_ws/`) don't have their own state. When you call a module, its resources become part of the calling module's state, prefixed with the module path.
+Child modules don't have their own state. Resources become part of the root module's state, prefixed with the full module path.
 
 This is why:
-- You run `terraform apply` in `providers/`, not in `terraform_ws/`
+- You run `terraform apply` in `providers/`, not in `terraform_ws/` or `modules/`
 - State is stored in `providers/terraform.tfstate`
-- Resource addresses look like `module.terraform_ws.aws_vpc.main`
+- Resource addresses look like `module.terraform_ws.module.vpc.aws_vpc.main`
 
 ### The Wrapper Scripts
 

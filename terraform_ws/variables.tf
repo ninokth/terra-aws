@@ -8,7 +8,7 @@ variable "name_prefix" {
   type        = string
 }
 
-# Phase 1: Network variables
+# Network variables
 variable "vpc_cidr" {
   description = "CIDR block for VPC"
   type        = string
@@ -33,28 +33,28 @@ variable "availability_zone" {
   default     = "eu-north-1a"
 }
 
-# Phase 2: Security Group variables
+# Security Group variables
 variable "admin_ip_cidr" {
   description = "CIDR block for admin access to bastion (e.g., 128.199.58.89/32)"
   type        = string
   # No default - user must explicitly set their IP for security
 }
 
-# Phase 3: SSH Key variables
+# SSH Key variables
 variable "ssh_public_key_path" {
   description = "Path to SSH public key (Ed25519 recommended)"
   type        = string
   default     = "~/.ssh/id_ed25519.pub"
 }
 
-# Phase 4: Bastion instance variables
+# Bastion instance variables
 variable "bastion_instance_type" {
   description = "EC2 instance type for bastion host"
   type        = string
   default     = "t3.micro"
 }
 
-# Phase 5: Private instance variables
+# Private instance variables
 variable "private_instance_type" {
   description = "EC2 instance type for private host"
   type        = string

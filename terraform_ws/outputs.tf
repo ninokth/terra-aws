@@ -1,4 +1,4 @@
-# Phase 0 outputs
+# Identity outputs
 output "account_id" {
   value       = data.aws_caller_identity.current.account_id
   description = "AWS Account ID detected by Terraform"
@@ -9,7 +9,7 @@ output "arn" {
   description = "Caller ARN detected by Terraform (IAM user or assumed role)"
 }
 
-# Phase 1 outputs (from VPC module)
+# VPC outputs
 output "vpc_id" {
   value       = module.vpc.vpc_id
   description = "ID of the VPC"
@@ -45,7 +45,7 @@ output "private_route_table_id" {
   description = "ID of the private route table"
 }
 
-# Phase 2 outputs (from Security Groups module)
+# Security Groups outputs
 output "bastion_sg_id" {
   value       = module.security_groups.bastion_sg_id
   description = "ID of the bastion security group"
@@ -56,7 +56,7 @@ output "private_sg_id" {
   description = "ID of the private security group"
 }
 
-# Phase 3 outputs (from SSH Key module)
+# SSH Key and AMI outputs
 output "key_pair_name" {
   value       = module.ssh_key.key_pair_name
   description = "Name of the SSH key pair"
@@ -72,7 +72,7 @@ output "ami_name" {
   description = "Name of the Ubuntu AMI"
 }
 
-# Phase 4 outputs (from Bastion module)
+# Bastion outputs
 output "bastion_instance_id" {
   value       = module.bastion.instance_id
   description = "ID of the bastion instance"
@@ -88,7 +88,7 @@ output "bastion_private_ip" {
   description = "Private IP of the bastion host"
 }
 
-# Phase 5 outputs (from Private Instance module)
+# Private Instance outputs
 output "private_instance_id" {
   value       = module.private_instance.instance_id
   description = "ID of the private instance"

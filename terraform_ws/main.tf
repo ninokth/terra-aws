@@ -1,7 +1,7 @@
-# Phase 0: Read-only validation
+# 1. Read-only validation
 data "aws_caller_identity" "current" {}
 
-# Phase 1: VPC and Network Foundation
+# 2. VPC and Network Foundation
 module "vpc" {
   source = "../modules/vpc"
 
@@ -13,7 +13,7 @@ module "vpc" {
   tags                = local.common_tags
 }
 
-# Phase 2: Security Groups
+# 3. Security Groups
 
 module "security_groups" {
   source = "../modules/security-groups"
@@ -25,7 +25,7 @@ module "security_groups" {
   tags                = local.common_tags
 }
 
-# Phase 3: SSH Key Pair and AMI
+# 4. SSH Key Pair and AMI
 
 module "ssh_key" {
   source = "../modules/ssh-key"
@@ -35,7 +35,7 @@ module "ssh_key" {
   tags                = local.common_tags
 }
 
-# Phase 4: Bastion Instance (pub_host-01) with nftables NAT
+# 5. Bastion Instance (pub_host-01) with nftables NAT
 
 module "bastion" {
   source = "../modules/bastion"
@@ -49,7 +49,7 @@ module "bastion" {
   tags                = local.common_tags
 }
 
-# Phase 5: Private Instance (prv_host-01) + NAT Routing
+# 6. Private Instance (prv_host-01) + NAT Routing
 
 module "private_instance" {
   source = "../modules/private-instance"

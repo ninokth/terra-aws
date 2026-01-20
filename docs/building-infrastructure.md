@@ -261,7 +261,7 @@ terraform plan
 ```
 Terraform will perform the following actions:
 
-  # module.terraform_ws.aws_eip.bastion will be created
+  # module.terraform_ws.module.bastion.aws_eip.bastion will be created
   + resource "aws_eip" "bastion" {
       + allocation_id        = (known after apply)
       + domain              = "vpc"
@@ -270,7 +270,7 @@ Terraform will perform the following actions:
       ...
     }
 
-  # module.terraform_ws.aws_instance.bastion will be created
+  # module.terraform_ws.module.bastion.aws_instance.bastion will be created
   + resource "aws_instance" "bastion" {
       + ami                          = "ami-073130f74f5ffb161"
       + instance_type                = "t3.micro"
@@ -318,12 +318,12 @@ Do you want to perform these actions?
 
 **What happens during apply**:
 
-1. **Phase 0**: Validate AWS credentials (data source)
-2. **Phase 1**: Create VPC, subnets, Internet Gateway, route tables
-3. **Phase 2**: Create security groups
-4. **Phase 3**: Upload SSH key to AWS, query AMI
-5. **Phase 4**: Create bastion instance, allocate Elastic IP
-6. **Phase 5**: Create private instance, configure NAT routing
+1. Validate AWS credentials (data source)
+2. Create VPC, subnets, Internet Gateway, route tables
+3. Create security groups
+4. Upload SSH key to AWS, query AMI
+5. Create bastion instance, allocate Elastic IP
+6. Create private instance, configure NAT routing
 
 **Expected output** (takes 2-3 minutes):
 
@@ -331,17 +331,17 @@ Do you want to perform these actions?
 module.terraform_ws.data.aws_caller_identity.current: Reading...
 module.terraform_ws.data.aws_caller_identity.current: Read complete after 0s
 
-module.terraform_ws.aws_vpc.main: Creating...
-module.terraform_ws.aws_vpc.main: Creation complete after 2s
-module.terraform_ws.aws_subnet.public: Creating...
-module.terraform_ws.aws_subnet.private: Creating...
-module.terraform_ws.aws_internet_gateway.main: Creating...
+module.terraform_ws.module.vpc.aws_vpc.main: Creating...
+module.terraform_ws.module.vpc.aws_vpc.main: Creation complete after 2s
+module.terraform_ws.module.vpc.aws_subnet.public: Creating...
+module.terraform_ws.module.vpc.aws_subnet.private: Creating...
+module.terraform_ws.module.vpc.aws_internet_gateway.main: Creating...
 ...
-module.terraform_ws.aws_instance.bastion: Still creating... [10s elapsed]
-module.terraform_ws.aws_instance.bastion: Still creating... [20s elapsed]
-module.terraform_ws.aws_instance.bastion: Creation complete after 25s
-module.terraform_ws.aws_eip.bastion: Creating...
-module.terraform_ws.aws_eip.bastion: Creation complete after 2s
+module.terraform_ws.module.bastion.aws_instance.bastion: Still creating... [10s elapsed]
+module.terraform_ws.module.bastion.aws_instance.bastion: Still creating... [20s elapsed]
+module.terraform_ws.module.bastion.aws_instance.bastion: Creation complete after 25s
+module.terraform_ws.module.bastion.aws_eip.bastion: Creating...
+module.terraform_ws.module.bastion.aws_eip.bastion: Creation complete after 2s
 ...
 
 Apply complete! Resources: 17 added, 0 changed, 0 destroyed.

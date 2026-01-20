@@ -72,17 +72,21 @@ Running this infrastructure costs approximately **$15-20/month** in eu-north-1:
 
 ## Infrastructure Components
 
-### Phase 0: Identity Validation
+Terraform builds infrastructure in **dependency order**—it analyzes resource references and creates a directed acyclic graph (DAG) to determine what must exist before other resources can be created. For example, subnets reference a VPC, so Terraform creates the VPC first. Security groups reference subnets, so those come next. This automatic ordering means you declare *what* you want, not *how* to build it.
+
+The components below are grouped by their logical function and roughly follow the deployment order:
+
+### 1. Identity Validation
 - AWS caller identity check (read-only)
 
-### Phase 1: Network Foundation
+### 2. Network Foundation
 - VPC with DNS support (10.22.0.0/16)
 - Public subnet (10.22.5.0/24) in eu-north-1a
 - Private subnet (10.22.6.0/24) in eu-north-1a
 - Internet Gateway for public subnet
 - Route tables for public and private subnets
 
-### Phase 2: Security Groups
+### 3. Security Groups
 - **Bastion Security Group**:
   - Ingress: SSH (22) from admin IP only
   - Ingress: All traffic from private subnet (for NAT)
@@ -91,18 +95,18 @@ Running this infrastructure costs approximately **$15-20/month** in eu-north-1:
   - Ingress: SSH (22) from bastion security group only
   - Egress: All traffic (routed via bastion NAT)
 
-### Phase 3: Compute Prerequisites
+### 4. Compute Prerequisites
 - Ed25519 SSH key pair
 - Ubuntu 24.04 LTS AMI lookup (latest)
 
-### Phase 4: Bastion Instance
+### 5. Bastion Instance
 - EC2 instance: t3.micro (pub_host-01)
 - Elastic IP for stable public access
 - Source/destination check disabled for NAT
 - nftables NAT configuration (masquerade)
 - IP forwarding enabled
 
-### Phase 5: Private Instance + NAT Routing
+### 6. Private Instance + NAT Routing
 - EC2 instance: t3.micro (prv_host-01)
 - Default route via bastion's ENI
 - Internet access through bastion NAT
@@ -248,10 +252,18 @@ terraform_demo/
 │   ├── terraform.tfvars.example  # Example configuration
 │   └── terraform.tfvars          # Your configuration (git-ignored)
 │
-├── terraform_ws/                  # CHILD MODULE (infrastructure resources)
-│   ├── main.tf                   # All infrastructure resources
-│   ├── variables.tf              # Module input variables
-│   └── outputs.tf                # Module outputs
+├── terraform_ws/                  # ORCHESTRATION MODULE (wires all modules together)
+│   ├── main.tf                   # Module calls for all infrastructure phases
+│   ├── variables.tf              # All input variables with defaults
+│   ├── outputs.tf                # All outputs from child modules
+│   └── locals.tf                 # Common tags and computed values
+│
+├── modules/                       # REUSABLE INFRASTRUCTURE MODULES
+│   ├── vpc/                      # VPC, subnets, route tables, IGW
+│   ├── security-groups/          # Bastion and private security groups
+│   ├── ssh-key/                  # AWS key pair from local SSH public key
+│   ├── bastion/                  # Bastion EC2 + Elastic IP + NAT config
+│   └── private-instance/         # Private EC2 + NAT route
 │
 ├── docs/                          # Documentation
 │   ├── README.md                 # Documentation index
@@ -472,7 +484,7 @@ terraform -chdir=providers destroy
 
 ```bash
 # Destroy specific resources
-terraform -chdir=providers destroy -target=module.terraform_ws.aws_instance.private
+terraform -chdir=providers destroy -target=module.terraform_ws.module.private_instance.aws_instance.private
 ```
 
 ## Security Considerations
