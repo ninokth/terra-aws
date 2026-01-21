@@ -2,6 +2,7 @@
 output "account_id" {
   value       = data.aws_caller_identity.current.account_id
   description = "AWS Account ID detected by Terraform"
+  sensitive   = true
 }
 
 output "arn" {
@@ -97,4 +98,20 @@ output "private_instance_id" {
 output "private_instance_private_ip" {
   value       = module.private_instance.private_ip
   description = "Private IP of the private host"
+}
+
+# NAT Gateway outputs (when enabled)
+output "nat_gateway_id" {
+  value       = var.use_nat_gateway ? module.nat_gateway[0].nat_gateway_id : null
+  description = "ID of the NAT Gateway (null if using bastion NAT)"
+}
+
+output "nat_gateway_public_ip" {
+  value       = var.use_nat_gateway ? module.nat_gateway[0].nat_gateway_public_ip : null
+  description = "Public IP of the NAT Gateway (null if using bastion NAT)"
+}
+
+output "nat_mode" {
+  value       = var.use_nat_gateway ? "nat-gateway" : "bastion-nat"
+  description = "NAT mode in use (bastion-nat or nat-gateway)"
 }

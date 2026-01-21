@@ -9,8 +9,13 @@ terraform.tfvars
 crash.log
 crash.*.log
 
-# Exclude Notes directory from git
+# Exclude Notes and docs directories from git
 Notes/
+docs/
+providers/
+
+# Deployment scripts (internal tooling - not for public distribution)
+scripts/
 
 # Critical rules documentation (project-specific, not for repo)
 .critical_rules/
@@ -24,13 +29,12 @@ config/infrastructure.ini
 config/infrastructure.env
 config/ssh_config
 
-# Runtime state files (contents ignored, directory kept via .gitkeep)
-scripts/current_state/*
-!scripts/current_state/.gitkeep
-
 # Log files
 logs/
 
 # Backup files (contents ignored, directory kept via .gitkeep)
 backup/*
 !backup/.gitkeep
+
+# Pre-commit cache
+.pre-commit-cache/

@@ -4,7 +4,7 @@ Creates the bastion host with NAT functionality using nftables.
 
 ## Resources Created
 
-- Data: AWS AMI lookup (Ubuntu 24.04)
+- Data: AWS AMI lookup (Ubuntu 24.04 LTS)
 - EC2 Instance (bastion with NAT)
 - Elastic IP
 

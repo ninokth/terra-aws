@@ -1,0 +1,27 @@
+# Production Environment - Example Variables
+# Copy to terraform.tfvars and customize
+
+# Required - replace with your AWS account ID (get it from: aws sts get-caller-identity --query Account --output text)
+allowed_account_ids = ["YOUR_ACCOUNT_ID"]
+
+# Required - replace with your IP (get it from: curl https://api.ipify.org)
+admin_ip_cidr = "YOUR_IP/32"
+
+# Optional - override defaults if needed
+
+# Tagging (customize for your organization)
+# project = "bastion-nat-demo"
+# owner   = "infrastructure-team"
+
+# region              = "eu-north-1"
+# availability_zone   = "eu-north-1a"
+# name_prefix         = "tf-prod"
+# vpc_cidr            = "10.23.0.0/16"
+# public_subnet_cidr  = "10.23.5.0/24"
+# private_subnet_cidr = "10.23.6.0/24"
+# bastion_instance_type = "t3.micro"
+# private_instance_type = "t3.micro"
+# ssh_public_key_path = "~/.ssh/id_ed25519.pub"
+
+# Security - VPC Flow Logs encryption (recommended for production compliance)
+# flow_logs_kms_key_arn = "arn:aws:kms:eu-north-1:YOUR_ACCOUNT_ID:key/YOUR_KEY_ID"

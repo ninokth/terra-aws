@@ -1,0 +1,19 @@
+# Checkov configuration for Terraform AWS infrastructure
+# See: https://www.checkov.io/2.Basics/CLI%20Command%20Reference.html
+
+framework:
+  - terraform
+
+# Skip rules with documented justifications
+skip-check:
+  # CKV2_AWS_5: Security groups ARE attached to EC2 instances via module references
+  # Checkov cannot trace cross-module attachments
+  - CKV2_AWS_5
+
+  # CKV_AWS_382: Egress rules are configurable via egress_allowed_cidrs variable
+  # Default is 0.0.0.0/0 for development; production should restrict this
+  # NAT gateway egress (bastion_egress_nat) requires unrestricted egress for packet forwarding
+  - CKV_AWS_382
+
+# Compact output for cleaner results
+compact: true

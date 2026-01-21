@@ -1,5 +1,6 @@
 # Data source: Find latest Ubuntu 24.04 LTS AMI
-# Note: Ubuntu 25.04 may not be available yet, using 24.04 LTS
+# Only used when var.ami_id is not set
+# Ubuntu 24.04 LTS (Noble Numbat) - supported until April 2029
 data "aws_ami" "ubuntu" {
   most_recent = true
   owners      = ["099720109477"] # Canonical (Ubuntu)
@@ -22,90 +23,52 @@ data "aws_ami" "ubuntu" {
 
 # Bastion EC2 Instance
 resource "aws_instance" "bastion" {
-  ami                    = data.aws_ami.ubuntu.id
+  # Use pinned AMI if provided, otherwise use latest Ubuntu 24.04 LTS
+  ami                    = var.ami_id != null ? var.ami_id : data.aws_ami.ubuntu.id
   instance_type          = var.instance_type
   key_name               = var.key_name
   subnet_id              = var.subnet_id
   vpc_security_group_ids = [var.security_group_id]
 
-  # Disable source/destination check for NAT functionality
-  source_dest_check = false
+  # Production hardening: EBS optimization and detailed monitoring
+  ebs_optimized = true
+  monitoring    = true
 
-  # User data: Configure nftables NAT and set hostname
-  user_data = <<-EOF
-              #!/bin/bash
-              set -e
+  # IAM instance profile for SSM and CloudWatch (if provided)
+  iam_instance_profile = var.iam_instance_profile
 
-              # Set hostname
-              hostnamectl set-hostname pub_host-01
-              echo "127.0.0.1 pub_host-01" >> /etc/hosts
+  # Disable source/destination check only if bastion is doing NAT
+  # When using AWS NAT Gateway, source_dest_check can remain enabled (default)
+  source_dest_check = var.enable_nat ? false : true
 
-              # Update system
-              apt-get update
-              apt-get upgrade -y
+  # User data: Use NAT config when enable_nat=true, otherwise basic setup
+  user_data = var.enable_nat ? local.nat_user_data : local.basic_user_data
 
-              # Install nftables (replaces iptables)
-              apt-get install -y nftables
+  # Security hardening: Require IMDSv2 (disable IMDSv1)
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required" # Enforces IMDSv2
+    http_put_response_hop_limit = 1
+    instance_metadata_tags      = "enabled"
+  }
 
-              # Enable IP forwarding for NAT
-              echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf
-              sysctl -p
+  # Security hardening: Encrypt root volume
+  root_block_device {
+    encrypted   = true
+    volume_type = "gp3"
+  }
 
-              # Configure nftables for NAT
-              # Get primary network interface name
-              IFACE=$(ip route | grep default | awk '{print $5}')
+  # Lifecycle rules for production stability
+  # Note: prevent_destroy cannot use variables in Terraform.
+  # Set var.prevent_destroy = true in production and validate via CI/CD.
+  # Note: user_data changes are ignored by default. To force replacement on
+  # user_data changes, taint the instance: terraform taint module.bastion.aws_instance.bastion
+  lifecycle {
+    prevent_destroy = false
+    ignore_changes  = [user_data]
+  }
 
-              # Create nftables NAT configuration
-              cat > /etc/nftables.conf <<'NFTCONF'
-              #!/usr/sbin/nft -f
-
-              # Flush all rules
-              flush ruleset
-
-              table ip nat {
-                  chain postrouting {
-                      type nat hook postrouting priority srcnat; policy accept;
-                      oifname "INTERFACE_NAME" masquerade
-                  }
-              }
-
-              table ip filter {
-                  chain input {
-                      type filter hook input priority filter; policy accept;
-                  }
-
-                  chain forward {
-                      type filter hook forward priority filter; policy accept;
-                      # Allow forwarding from/to private subnet
-                      ip saddr ${var.private_subnet_cidr} accept
-                      ct state related,established accept
-                  }
-
-                  chain output {
-                      type filter hook output priority filter; policy accept;
-                  }
-              }
-              NFTCONF
-
-              # Replace INTERFACE_NAME placeholder with actual interface
-              sed -i "s/INTERFACE_NAME/$IFACE/g" /etc/nftables.conf
-
-              # Load nftables rules
-              nft -f /etc/nftables.conf
-
-              # Enable nftables service to persist on reboot
-              systemctl enable nftables
-              systemctl start nftables
-
-              # Log completion
-              echo "Bastion host pub_host-01 configured with nftables NAT" > /var/log/bastion-setup.log
-              EOF
-
-  tags = merge(var.tags, {
-    Name = "${var.name_prefix}-bastion"
-    Host = "pub_host-01"
-    Role = "bastion-nat"
-  })
+  tags = local.instance_tags
 }
 
 # Elastic IP for Bastion (stable public IP)
@@ -113,8 +76,11 @@ resource "aws_eip" "bastion" {
   domain   = "vpc"
   instance = aws_instance.bastion.id
 
-  tags = merge(var.tags, {
-    Name = "${var.name_prefix}-bastion-eip"
-    Host = "pub_host-01"
-  })
+  # Lifecycle rules - prevent loss of stable public IP
+  # Note: prevent_destroy cannot use variables in Terraform.
+  lifecycle {
+    prevent_destroy = false
+  }
+
+  tags = local.eip_tags
 }

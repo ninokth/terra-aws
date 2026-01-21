@@ -25,3 +25,15 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "bastion_nat_enabled" {
+  description = "Enable NAT-related security group rules for bastion (false when using AWS NAT Gateway)"
+  type        = bool
+  default     = true
+}
+
+variable "egress_allowed_cidrs" {
+  description = "CIDR blocks allowed for egress traffic (HTTP/HTTPS/DNS/ICMP). Default allows all (0.0.0.0/0). For production, restrict to specific endpoints (e.g., VPC endpoints, package repos)."
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}

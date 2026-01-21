@@ -1,0 +1,78 @@
+# Pre-commit hooks for Terraform
+# Install: pip install pre-commit && pre-commit install
+# Run manually: pre-commit run --all-files
+#
+# Requirements:
+#   - terraform >= 1.5.0
+#   - tflint (https://github.com/terraform-linters/tflint)
+#   - terraform-docs (https://github.com/terraform-docs/terraform-docs)
+#   - checkov (pip install checkov)
+
+repos:
+  # Terraform formatting, validation, and linting
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.96.1
+    hooks:
+      # Format all Terraform files
+      - id: terraform_fmt
+
+      # Validate Terraform configuration
+      - id: terraform_validate
+        args:
+          - --hook-config=--retry-once-with-cleanup=true
+
+      # Lint with tflint (AWS ruleset)
+      - id: terraform_tflint
+        args:
+          - --args=--config=__GIT_WORKING_DIR__/.tflint.hcl
+
+      # Auto-generate module documentation
+      - id: terraform_docs
+        args:
+          - --hook-config=--path-to-file=README.md
+          - --hook-config=--add-to-existing-file=true
+          - --hook-config=--create-file-if-not-exist=true
+          - --args=--config=.terraform-docs.yml
+
+      # Security scanning with Checkov
+      - id: terraform_checkov
+        args:
+          - --args=--quiet
+          - --args=--compact
+          # Skip checks with documented justifications:
+          - --args=--skip-check=CKV2_AWS_5    # SG attached to EC2 via module reference
+          - --args=--skip-check=CKV_AWS_382   # Egress configurable via egress_allowed_cidrs; NAT requires 0.0.0.0/0
+          - --args=--skip-check=CKV_AWS_144   # S3 cross-region replication (no S3)
+          - --args=--skip-check=CKV_AWS_145   # S3 KMS encryption (no S3)
+          - --args=--skip-check=CKV2_AWS_6    # S3 block public access (no S3)
+
+  # Prevent secrets from being committed
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args:
+          - --baseline
+          - .secrets.baseline
+        exclude: |
+          (?x)^(
+            .*\.terraform/.*|
+            .*\.terraform\.lock\.hcl
+          )$
+
+  # General file hygiene
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: end-of-file-fixer
+        exclude: |
+          (?x)^(
+            .*\.terraform/.*
+          )$
+      - id: check-yaml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ['--maxkb=1000']

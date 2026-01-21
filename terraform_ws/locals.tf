@@ -3,10 +3,11 @@
 
 locals {
   # Common tags applied to all resources
+  # Project and Owner are now configurable via variables
   common_tags = {
-    Project     = "bastion-nat-demo"
-    Environment = "dev"
+    Project     = var.project
+    Environment = var.environment
     ManagedBy   = "terraform"
-    Owner       = "infrastructure-team"
+    Owner       = var.owner
   }
 }

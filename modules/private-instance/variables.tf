@@ -35,12 +35,37 @@ variable "route_table_id" {
 }
 
 variable "nat_network_interface_id" {
-  description = "Network interface ID of the bastion (NAT gateway)"
+  description = "Network interface ID of the bastion (for bastion NAT mode)"
   type        = string
+  default     = null
+}
+
+variable "create_bastion_nat_route" {
+  description = "Create NAT route via bastion (false when using AWS NAT Gateway)"
+  type        = bool
+  default     = true
+}
+
+variable "nat_gateway_id" {
+  description = "NAT Gateway ID (used when create_bastion_nat_route = false)"
+  type        = string
+  default     = null
 }
 
 variable "tags" {
   description = "Tags to apply to resources"
   type        = map(string)
   default     = {}
+}
+
+variable "skip_apt_upgrade" {
+  description = "Skip apt-get upgrade in user_data. Enable for production with baked AMIs to avoid boot-time drift."
+  type        = bool
+  default     = false
+}
+
+variable "iam_instance_profile" {
+  description = "IAM instance profile name for EC2. Required for SSM access and CloudWatch metrics."
+  type        = string
+  default     = null
 }

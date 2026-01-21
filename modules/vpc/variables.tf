@@ -33,3 +33,22 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+# VPC Flow Logs configuration
+variable "enable_flow_logs" {
+  description = "Enable VPC flow logs for network traffic monitoring"
+  type        = bool
+  default     = true
+}
+
+variable "flow_logs_retention_days" {
+  description = "Number of days to retain VPC flow logs in CloudWatch (365 for compliance)"
+  type        = number
+  default     = 365
+}
+
+variable "flow_logs_kms_key_arn" {
+  description = "KMS key ARN for encrypting flow logs. If null, uses default encryption."
+  type        = string
+  default     = null
+}

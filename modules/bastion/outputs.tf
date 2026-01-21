@@ -14,12 +14,17 @@ output "instance_id" {
 }
 
 output "ami_id" {
-  description = "AMI ID used for the bastion"
-  value       = data.aws_ami.ubuntu.id
+  description = "AMI ID used for the bastion (pinned or latest Ubuntu 24.04 LTS)"
+  value       = aws_instance.bastion.ami
+}
+
+output "ami_source" {
+  description = "Indicates whether AMI is pinned or from dynamic lookup"
+  value       = var.ami_id != null ? "pinned" : "latest_lookup"
 }
 
 output "ami_name" {
-  description = "AMI name used for the bastion"
+  description = "AMI name (only accurate when ami_source is 'latest_lookup'; shows lookup result when pinned)"
   value       = data.aws_ami.ubuntu.name
 }
 

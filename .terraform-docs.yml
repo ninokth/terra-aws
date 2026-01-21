@@ -1,0 +1,82 @@
+# terraform-docs Configuration
+# https://terraform-docs.io/user-guide/configuration/
+#
+# Generates module documentation automatically
+
+formatter: markdown table
+
+version: ">= 0.18.0"
+
+header-from: main.tf
+footer-from: ""
+
+recursive:
+  enabled: false
+  path: modules
+
+sections:
+  hide: []
+  show: []
+
+content: |-
+  {{ .Header }}
+
+  ## Usage
+
+  ```hcl
+  module "{{ .Module.Name }}" {
+    source = "{{ .Module.Source }}"
+
+    # Required variables
+    {{- range .Module.Inputs }}
+    {{- if .Required }}
+    {{ .Name }} = {{ if eq .Type "string" }}"value"{{ else if eq .Type "bool" }}true{{ else if eq .Type "number" }}0{{ else }}...{{ end }}
+    {{- end }}
+    {{- end }}
+  }
+  ```
+
+  {{ .Requirements }}
+
+  {{ .Providers }}
+
+  {{ .Modules }}
+
+  {{ .Resources }}
+
+  {{ .Inputs }}
+
+  {{ .Outputs }}
+
+  {{ .Footer }}
+
+output:
+  file: README.md
+  mode: inject
+  template: |-
+    <!-- BEGIN_TF_DOCS -->
+    {{ .Content }}
+    <!-- END_TF_DOCS -->
+
+output-values:
+  enabled: false
+  from: ""
+
+sort:
+  enabled: true
+  by: required
+
+settings:
+  anchor: true
+  color: true
+  default: true
+  description: true
+  escape: true
+  hide-empty: false
+  html: true
+  indent: 2
+  lockfile: true
+  read-comments: true
+  required: true
+  sensitive: true
+  type: true

@@ -34,3 +34,27 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "enable_nat" {
+  description = "Enable NAT functionality on bastion (set to false when using AWS NAT Gateway)"
+  type        = bool
+  default     = true
+}
+
+variable "ami_id" {
+  description = "Optional AMI ID to use. If not set, uses latest Ubuntu 24.04 LTS. Set this in production for stability."
+  type        = string
+  default     = null
+}
+
+variable "skip_apt_upgrade" {
+  description = "Skip apt-get upgrade in user_data. Enable for production with baked AMIs to avoid boot-time drift."
+  type        = bool
+  default     = false
+}
+
+variable "iam_instance_profile" {
+  description = "IAM instance profile name for EC2. Required for SSM access and CloudWatch metrics."
+  type        = string
+  default     = null
+}
