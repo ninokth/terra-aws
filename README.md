@@ -4,6 +4,8 @@ A production-ready Terraform implementation of a secure bastion host pattern wit
 
 ## Architecture Overview
 
+### Dev Environment (Bastion NAT)
+
 ```
 Internet
     |
@@ -32,7 +34,39 @@ Internet
             +---------------------------------------+
 ```
 
-Note: This is a single-AZ deployment by default (eu-north-1a). For production workloads requiring high availability, deploy across multiple AZs.
+### Prod Environment (AWS NAT Gateway)
+
+```
+Internet
+    |
+    v
+[Internet Gateway]
+    |
+    +-- VPC (10.23.0.0/16) -------------------------+
+    |                                                |
+    +-- Public Subnet (10.23.5.0/24) --------+      |
+    |   |                                     |      |
+    |   +-- Bastion Host (pub_host-01)       |      |
+    |   |   - Public IP: <EIP assigned>      |      |
+    |   |   - Private IP: 10.23.5.x          |      |
+    |   |   - SSH: Admin IP only             |      |
+    |   |                                     |      |
+    |   +-- NAT Gateway                      |      |
+    |       - Public IP: <EIP assigned>      |      |
+    |       - Managed by AWS                 |      |
+    |                                         |      |
+    +-- Private Subnet (10.23.6.0/24) -------+      |
+        |                                            |
+        +-- Private Host (prv_host-01)              |
+            - Private IP: 10.23.6.x                 |
+            - SSH: Bastion only                     |
+            - Internet: Via NAT Gateway             |
+            - No public IP                          |
+            |                                        |
+            +---------------------------------------+
+```
+
+Note: Both environments are single-AZ deployments by default (eu-north-1a). For production workloads requiring high availability, deploy across multiple AZs.
 
 ## Environments
 
@@ -264,14 +298,6 @@ View outputs:
 
 ```bash
 terraform output
-```
-
-## Teardown
-
-To destroy all resources:
-
-```bash
-terraform destroy
 ```
 
 ## SSH Access
